@@ -7,9 +7,15 @@ const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 const app = express();
 const PORT = 3001;
+const fs = require('fs');
+const path = require('path');
+const DATA_FILE = path.join(__dirname, 'products.json');
 
-const JWT_SECRET = "jwt_is_good"
+const ACCESS_SECRET = "jwt_is_good"
+const REFRESH_SECRET = "some_secret"
+
 const ACCESS_EXPIRES_IN = "15m"
+const REFRESH_EXPIRES_IN = "7d"
 
 app.use(express.json());
 
@@ -20,11 +26,59 @@ app.use(cors({
 }));
 
 let users = []
+const refreshTokens = new Set();
 
-let products = [
+
+function generateAccessToken(user) {
+return jwt.sign(
+    {
+        sub: user.id,
+        username: user.username,
+    },
+ACCESS_SECRET,
+    {
+        expiresIn: ACCESS_EXPIRES_IN,
+    }
+)};
+
+function generateRefreshToken(user) {
+return jwt.sign(
+{
+    sub: user.id,
+    username: user.username,
+},
+REFRESH_SECRET,
+{
+    expiresIn: REFRESH_EXPIRES_IN,
+}
+);
+}
+
+function loadData() {
+    try {
+        if (fs.existsSync(DATA_FILE)) {
+            const data = fs.readFileSync(DATA_FILE, 'utf8');
+            return JSON.parse(data);
+        }
+    } catch (err) {
+        console.log('Ошибка загрузки данных, используем дефолтные');
+    }
+    return null;
+}
+
+
+function saveData(data) {
+    try {
+        fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
+    } catch (err) {
+        console.error('Ошибка сохранения:', err);
+    }
+}
+
+let products = loadData() || [ 
     {id: "abc123", name: "Кожанная куртка Guess", price: 12690, category: "jacket", description: "Материал: кожзам.", countInStock: 12},
     {id: "def232", name: "Куртка Homeless", price: 16990, category: "jacket", description: "Кол-во страз: 1000шт.", countInStock: 14}
-]
+];
 
 
 
@@ -73,7 +127,7 @@ function authMiddleware(req, res, next){
         return res.status(401).json({error: "Missing or invalid autharization header."});
     }
     try { 
-        const payload = jwt.verify(token, JWT_SECRET);
+        const payload = jwt.verify(token, ACCESS_SECRET);
         req.user = payload;
         next();
     } catch(e) {
@@ -225,20 +279,13 @@ app.post("/api/auth/login", async(req, res) => {
     const user = users.find(u => u.email === email);;
     if(!user) return; 
     
-    const accessToken = jwt.sign(
-        {
-            sub: user.id,
-            username: user.email,
-        },
-            JWT_SECRET,
-        {
-            expiresIn: ACCESS_EXPIRES_IN,
-        }   
-    );
     
     const isAuthentethicated = await verifyPassword(password, user.hashedPassword);
     if (isAuthentethicated){
-        res.status(200).json({accessToken});
+        const accessToken = generateAccessToken(user);
+        const refreshToken = generateRefreshToken(user);
+        refreshTokens.add(refreshToken)
+        res.status(200).json({accessToken, refreshToken});
     } else {
         res.status(401).json({ error: "not authentethicated" })
     }
@@ -250,6 +297,13 @@ app.post("/api/auth/register", async (req, res) => {
         return res.status(400).json({ error: "Email, first name, last_name and password are required" });
     }
 
+    const exists = users.some((u) => u.email === email);
+        if (exists) {
+            return res.status(409).json({
+                error: "email already exists",
+            });
+        }
+
     const newUser = {
         id: nanoid(6),
         email: email, 
@@ -258,8 +312,48 @@ app.post("/api/auth/register", async (req, res) => {
         hashedPassword: await hashPassword(password)
     };
 
+
     users.push(newUser);
     res.status(201).json({user_id: newUser.id, first_name: newUser.first_name});
+});
+
+
+app.post("/api/auth/refresh", (req, res) => {
+    const {refreshToken} = req.body;
+
+    if(!refreshToken){
+        return res.status(400).json({error: "refreshToken is required"});
+    }
+
+    if (!refreshTokens.has(refreshToken)) {
+        return res.status(401).json({
+            error: "Invalid refresh token",
+        });
+    }
+
+    try {
+        const payload = jwt.verify(refreshToken, REFRESH_SECRET);
+        const user = users.find((u) => u.id === payload.sub);
+        if (!user) {
+            return res.status(401).json({
+                error: "User not found",
+            });
+        } 
+        refreshTokens.delete(refreshToken);
+        
+        const newAccessToken = generateAccessToken(user);
+        const newRefreshToken = generateRefreshToken(user);
+
+        refreshTokens.add(newRefreshToken);
+        res.json({
+            accessToken: newAccessToken,
+            refreshToken: newRefreshToken,
+        });
+        } catch (err) {
+            return res.status(401).json({
+                error: "Invalid or expired refresh token",
+            });
+        }
 });
 
 
@@ -315,7 +409,7 @@ app.post("/api/products", (req, res) => {
         description: description.trim(),
         countInStock: countInStock
     }
-    products.push(newProduct);
+    saveData(products);
     res.status(201).json(newProduct)
 });
 
@@ -448,6 +542,7 @@ app.patch("/api/products/:id", authMiddleware ,(req, res) => {
     if(category !== undefined) product.category = category;
     if(description !== undefined) product.description = description;
     if(countInStock !== undefined) product.countInStock = countInStock;
+    saveData(products);
     res.json(product)
 })
 
@@ -485,7 +580,7 @@ app.delete("/api/products/:id", authMiddleware,(req, res) => {
     if(!exists) return res.status(404).json({error: "Product not found"});
 
     products = products.filter(p => p.id !== id);
-
+    saveData(products);
     res.status(204).send();
 });
  
