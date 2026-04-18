@@ -5,7 +5,7 @@ const apiClient = axios.create({
     headers: {
         "Content-Type": "application/json",
         "Accept": "application/json",
-    } 
+    }
 });
 
 export const api = {
@@ -33,5 +33,17 @@ export const api = {
     deleteProduct: async (id) => {
         let response = await apiClient.delete(`/products/${id}`);
         return response.data;
-    }
+    },
+
+    createUser: async (user) => {
+        let response = await apiClient.post("/users", user);
+        return response.data; 
+    },
+    
+    getUsers: async () => {
+        let response = await apiClient.get("/users");
+        return response.data; 
+    },
+
+    
 }

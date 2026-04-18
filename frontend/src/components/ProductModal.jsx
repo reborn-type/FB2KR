@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 
 export default function ProductModal({open, mode, initialProduct, onClose, onSubmit}){
     const [name, setName] = useState("");
@@ -8,61 +8,43 @@ export default function ProductModal({open, mode, initialProduct, onClose, onSub
     const [countInStock, setCountInStock] = useState("");
     
     useEffect(() => {
-        if (!open) return; 
-        setName(initialProduct?.name ?? "");
-        setPrice(initialProduct?.price != null ? String(initialProduct.price) : "");
-        setCategory(initialProduct?.category ?? "");
-        setDescription(initialProduct?.description ?? "");
-        setCountInStock(initialProduct?.countInStock != null ? String(initialProduct.countInStock) : "");
-    }, [open, initialProduct])
+        if (open) {
+            setName(initialProduct?.name ?? "");
+            setPrice(initialProduct?.price != null ? String(initialProduct.price) : "");
+            setCategory(initialProduct?.category ?? "");
+            setDescription(initialProduct?.description ?? "");
+            setCountInStock(initialProduct?.countInStock != null ? String(initialProduct.countInStock) : "");
+        }
+    }, [open, initialProduct]);
 
-    if (!open) return null; 
-
-    const title = mode === "edit" ? "Редактирование товаров" : "Создание товара"; 
-
-    const handleSubmit = (e) => {
+    const handleSubmit = useCallback((e) => {
         e.preventDefault();
 
-        const trimmed_name = String(name).trim();
-        const parsed_price = Number(price);
-        const trimmed_category = category.trim();
-        const trimmed_description = String(description).trim();
-        const parsed_count = Number(countInStock);
+        const trimmedName = name.trim();
+        const parsedPrice = Number(price);
+        const trimmedCategory = category.trim();
+        const trimmedDescription = description.trim();
+        const parsedCount = Number(countInStock);
         
-        if (!trimmed_name) {
-            alert("Введите название товара.");
-            return;
-        }
-
-        if(!parsed_price) {
-            alert("Введите цену.");
-            return; 
-        }
-
-        if(!trimmed_category){
-            alert("Выберите категорию товара.")
-            return; 
-        }
-
-        if(!trimmed_description){
-            alert("Введите описание (до 100 символов).")
-            return; 
-        }
-
-        if (!parsed_count){
-            alert("Введите количество товара.")
-            return;
-        }
+        if (!trimmedName) return alert("Введите название товара.");
+        if (isNaN(parsedPrice) || parsedPrice <= 0) return alert("Введите корректную цену.");
+        if (!trimmedCategory) return alert("Выберите категорию товара.");
+        if (!trimmedDescription) return alert("Введите описание.");
+        if (isNaN(parsedCount) || parsedCount < 0) return alert("Введите количество товара.");
 
         onSubmit({
             id: initialProduct?.id,
-            name: trimmed_name,
-            price: parsed_price,
-            category: trimmed_category,
-            description: trimmed_description,
-            count: parsed_count,
-        })
-    }
+            name: trimmedName,
+            price: parsedPrice,
+            category: trimmedCategory,
+            description: trimmedDescription,
+            count: parsedCount,
+        });
+    }, [name, price, category, description, countInStock, initialProduct, onSubmit]);
+
+    if (!open) return null;
+
+    const title = mode === "edit" ? "Редактирование товара" : "Создание товара"; 
 
 return (
     <div className="backdrop" onMouseDown={onClose}>

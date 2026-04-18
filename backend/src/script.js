@@ -7,15 +7,8 @@ const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 const app = express();
 const PORT = 3001;
-const fs = require('fs');
 const path = require('path');
 const DATA_FILE = path.join(__dirname, 'products.json');
-
-const ACCESS_SECRET = "jwt_is_good"
-const REFRESH_SECRET = "some_secret"
-
-const ACCESS_EXPIRES_IN = "15m"
-const REFRESH_EXPIRES_IN = "7d"
 
 app.use(express.json());
 
@@ -26,62 +19,6 @@ app.use(cors({
 }));
 
 let users = []
-const refreshTokens = new Set();
-
-
-function generateAccessToken(user) {
-return jwt.sign(
-    {
-        sub: user.id,
-        username: user.username,
-    },
-ACCESS_SECRET,
-    {
-        expiresIn: ACCESS_EXPIRES_IN,
-    }
-)};
-
-function generateRefreshToken(user) {
-return jwt.sign(
-{
-    sub: user.id,
-    username: user.username,
-},
-REFRESH_SECRET,
-{
-    expiresIn: REFRESH_EXPIRES_IN,
-}
-);
-}
-
-function loadData() {
-    try {
-        if (fs.existsSync(DATA_FILE)) {
-            const data = fs.readFileSync(DATA_FILE, 'utf8');
-            return JSON.parse(data);
-        }
-    } catch (err) {
-        console.log('Ошибка загрузки данных, используем дефолтные');
-    }
-    return null;
-}
-
-
-function saveData(data) {
-    try {
-        fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
-    } catch (err) {
-        console.error('Ошибка сохранения:', err);
-    }
-}
-
-let products = loadData() || [ 
-    {id: "abc123", name: "Кожанная куртка Guess", price: 12690, category: "jacket", description: "Материал: кожзам.", countInStock: 12},
-    {id: "def232", name: "Куртка Homeless", price: 16990, category: "jacket", description: "Кол-во страз: 1000шт.", countInStock: 14}
-];
-
-
-
 
 const swaggerOptions = {
     definition: {
@@ -117,26 +54,6 @@ app.use((req, res, next) => {
     next();
 })
 
-
-function authMiddleware(req, res, next){
-    const header = req.headers.authorization || "";
-    
-    const [scheme, token] = header.split(" ");
-
-    if(scheme !== "Bearer" || !token){
-        return res.status(401).json({error: "Missing or invalid autharization header."});
-    }
-    try { 
-        const payload = jwt.verify(token, ACCESS_SECRET);
-        req.user = payload;
-        next();
-    } catch(e) {
-        return res.status(401).json({
-            error: "Invalid or expired token",
-        });
-    }
-}
-
 app.get("/api/auth/me", authMiddleware, (req, res) => {
     const userId = req.user.sub; 
     const user = users.find(u => u.id === userId);;
@@ -148,77 +65,6 @@ app.get("/api/auth/me", authMiddleware, (req, res) => {
 
     res.status(200).json({id: user.id, email: user.email})
 })
-
-/**
-* @swagger
-* components:
-*   schemas:
-*       Product:
-*           type: object
-*           required:
-*               - name
-*               - price
-*               - category
-*               - description
-*               - countInStock
-*           properties:
-*               id:
-*                   type: string
-*                   description: Автоматически сгенерированный уникальный ID товара длиной в 6 символов
-*               name:
-*                   type: string
-*                   description: Название вещи
-*               price:
-*                   type: integer
-*                   description: Стоимость вещи
-*               category:
-*                   type: string
-*                   description: Категория вещи 
-*               desrciption:
-*                   type: string
-*                   description: Описание вещи 
-*               countInStock:
-*                   type: integet
-*                   description: Кол-во вещей доступных на сайте
-*               example:
-*                   id: "abc123"
-*                   name: Guess Hoodie
-*                   price: 16232
-*                   category: верхняя одежда
-*                   description: Черное кожанное худи
-*                   countInStock: 121
-*/
-
-function findUserOr404(userMail = null, userId = null, res = null){
-    const user = users.find(u => u.email === userMail);
-    if(userId !== 0){
-        users.find(u => u.id === userId);
-    }
-    if (!user && res) { 
-        res.status(404).json({error: "user not found"});
-        return null;
-    }
-    return user;
-}
-
-function findProductOr404(id, res){
-    const product = products.find(p => p.id == id);
-    if(!product){
-        res.status(404).json({error: "Product not found."});
-        return null; 
-    }
-    return product;
-}
-
-async function hashPassword(password) {
-    const rounds = 10; 
-    return bcrypt.hash(password, rounds)
-}
-
-async function verifyPassword(password, passwordHash){
-    return bcrypt.compare(password, passwordHash);
-}
-
 
 /**
 * @swagger
