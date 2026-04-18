@@ -391,7 +391,7 @@ app.patch("/api/products/:id", authMiddleware ,(req, res) => {
     saveData(products);
     res.json(product)
 })
-
+//
 
 /**
 * @swagger
