@@ -1,12 +1,13 @@
 const db = require('../config/db');
 const {nanoid} = require("nanoid")
+
 async function getAllProducts() {
     const res = await db.query('SELECT * FROM products;');
     return res.rows;
 };
 
 async function getProductById(productId) {
-    const qry = 'SELECT * FROM products WHERE id = $1;';
+    const qry = 'SELECT * FROM products WHERE product_id = $1;';
     const values = [productId];
     try {
         const res = await db.query(qry, values);
@@ -18,19 +19,21 @@ async function getProductById(productId) {
 };
 
 
-async function createProduct(name, price, category, description, countInStock, imagePath) {
-     const qry = `
-        INSERT INTO products (product_id, name, price, category, description, count_in_stock, image_url)
+async function createProduct(id, name, price, category, description, countInStock, imagePath) {
+    console.log('Создание продукта с данными:', {id, name, price, category, description, countInStock, imagePath });
+    const qry = `
+        INSERT INTO products (product_id, product_name, price, category, description, count_in_stock, image_url)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
-        RETURNING *;
+        RETURNING * 
     `;
-    const values = [nanoid(5), name, price, category, description, countInStock, imagePath];
+    const values = [id, name, price, category, description, countInStock, imagePath];
     try {
         const res = await db.query(qry, values);
         return res.rows[0];
     }
     catch (err) {
-        console.error('Ошибка при выполнении запроса: ', err.stack);
+        console.error('Критическая ошибка при создании продукта:', err.message);
+        throw err;
     }
 };
 
@@ -58,19 +61,20 @@ async function patchProductById(id, name, price, category, description, countInS
 };
 
 async function deleteProductById(productId) {
-    const qry = 'DELETE FROM products WHERE id = $1 RETURNING *;';
-    const values = [productId]; 
+    const qry = 'DELETE FROM products WHERE product_id = $1 RETURNING *';
+    const values = [productId];
     try {
         const res = await db.query(qry, values);
         if (res.rows.length > 0) {
-            alert('Вещь удалена.');
             console.log('Вещь удалена:', res.rows[0]);
             return res.rows[0];
         } else {
-            console.log('Вещь не найдена!');
+            console.log('Попытка удаления: Товар с таким ID не найден в базе.');
+            return null;
         }
     } catch (err) {
         console.error('Ошибка при выполнении запроса: ', err.stack);
+        throw err; 
     }
 };
 

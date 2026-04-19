@@ -49,5 +49,7 @@ module.exports = {
     generateAccessToken,
     generateRefreshToken,
     hashPassword,
-    verifyPassword
+    verifyPassword,
+    ACCESS_SECRET,
+    REFRESH_SECRET
 };

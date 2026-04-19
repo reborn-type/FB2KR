@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod"; 
 import { productSchema } from "../entities/product/model/validation";
@@ -15,6 +15,10 @@ export default function ProductModal({open, mode, initialProduct, onClose, onSub
         values: initialProduct, 
     });
 
+    useEffect(() => {
+        if (!open) reset({});
+    }, [open, reset]);
+
     if (!open) return null;
 
     const title = mode === "edit" ? "Редактирование товара" : "Создание товара";
@@ -28,6 +32,7 @@ export default function ProductModal({open, mode, initialProduct, onClose, onSub
                 </div>
 
                 <form className="form" onSubmit={handleSubmit(onSubmit)}>
+                    <input type="hidden" {...register("id")} />
                     <label className="label">
                         Название
                         <input 

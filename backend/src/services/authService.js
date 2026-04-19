@@ -1,19 +1,19 @@
 const usersData = require('../data/usersData');
 const authUtils = require('../utils/authUtils');
 const authData = require('../data/authData');
+const { nanoid } = require('nanoid');
 
-const register = async ({email, first_name, last_name, password}) => {
+const register = async ({email, username, password}) => {
     const existingUser = await usersData.getUserByEmail(email);
     if (existingUser) {
         throw new Error('Email already exists');
     }
-    
     const hashedPassword = await authUtils.hashPassword(password);
-    const newUser = await usersData.createUser(first_name, last_name, email, hashedPassword);
+    const newUser = await usersData.createUser(nanoid(5), username, email, hashedPassword);
     return newUser;
 };
 
-const login = async ({email, password}) => {
+const login = async (email, password) => {
     const user = await usersData.getUserByEmail(email);
     if (!user) {
         throw new Error('User not found');
@@ -26,7 +26,7 @@ const login = async ({email, password}) => {
     
     const accessToken = authUtils.generateAccessToken(user);
     const refreshToken = authUtils.generateRefreshToken(user);
-    await authData.saveRefreshToken(user.id, refreshToken);
+    await authData.saveRefreshToken(user.email, refreshToken);
 
     return { accessToken, refreshToken };
 };

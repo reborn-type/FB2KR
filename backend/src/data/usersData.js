@@ -19,7 +19,7 @@ async function getUserById(userId) {
 };
 
 async function getUserByEmail(email) {
-    const qry = 'SELECT * FROM users WHERE email = $1;';
+    const qry = 'SELECT * FROM users WHERE email ILIKE $1';
     const values = [email];
     try {
         const res = await db.query(qry, values);
@@ -27,16 +27,17 @@ async function getUserByEmail(email) {
     }
     catch (err) {
         console.error('Ошибка при выполнении запроса: ', err.stack);
+        throw err;
     }
 }
 
-async function createUser(name, email, passwordHash) {
+async function createUser(user_id,name, email, passwordHash) {
      const qry = `
         INSERT INTO users (user_id, username, email, password_hash)
         VALUES ($1, $2, $3, $4)
         RETURNING *;
     `;
-    const values = [nanoid(5), name, email, passwordHash];
+    const values = [user_id, name, email, passwordHash];
     try {
         const res = await db.query(qry, values);
         return res.rows[0];

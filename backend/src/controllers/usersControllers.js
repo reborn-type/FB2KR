@@ -4,7 +4,7 @@ const {getAllUsers,
     patchUserById, 
     deleteUserById, 
     getUserByEmail} = require('../data/usersData');
-
+const {nanoid} = require('nanoid');
 
 async function getUsers(req, res) {
     try {
@@ -49,8 +49,8 @@ async function getUserWithEmail(req, res) {
 
 async function postUser(req, res) {
     try {
-        const {name, email, passwordHash} = req.body;
-        const user = await createUser(name, email, passwordHash);
+        const { username, email, passwordHash} = req.body;
+        const user = await createUser(nanoid(5), username, email, passwordHash);
         if(!user){
             return res.status(400).json({"error message": "Пользователь не был создан."});
         }

@@ -4,7 +4,7 @@ import "./ProductsPage.css";
 
 import ProductsList from "../../components/ProductsList.jsx";
 import ProductModal from "../../components/ProductModal.jsx";
-import {api} from "../../api/axios"
+import {api} from "../../shared/api/axios"
 
 export default function ProductsPage() {
     const [products, setProducts] = useState([]);
@@ -38,9 +38,9 @@ export default function ProductsPage() {
         setModalOpen(true);
     };
     
-    const openEdit = (user) => {
+    const openEdit = (product) => {
         setModalMode("edit");
-        setEditingProduct(user);
+        setEditingProduct(product);
         setModalOpen(true);
     };
 
@@ -50,8 +50,13 @@ export default function ProductsPage() {
     };
 
     const handleDelete = async (id) => {
+        if (!id) {
+            alert("Ошибка: ID товара не определен");
+            return;
+        }
         const ok = window.confirm("Удалить товар?");
         if (!ok) return;
+        
         try {
             await api.deleteProduct(id);
             setProducts(prev => prev.filter(p => p.id !== id));
@@ -67,9 +72,9 @@ export default function ProductsPage() {
                 const newProduct = await api.createProduct(payload);
                 setProducts((prev) => [ ...prev, newProduct]);
             } else {
-                const updatedProduct = await api.updateProduct(payload.id, payload);
+                const updatedProduct = await api.updateProduct(payload.product_id, payload);
                 setProducts((prev) =>
-                    prev.map((p) => (p.id === payload.id ? updatedProduct : p))
+                    prev.map((p) => (p.product_id === payload.product_id ? updatedProduct : p))
                 );
             }
             closeModal();

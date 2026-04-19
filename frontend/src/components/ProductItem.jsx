@@ -6,7 +6,7 @@ export default function ProductItem({product, onEdit, onDelete}){
             <div className="productMain">
                 <div className="productImage">{product.image}</div>
                 <div className="productId">#{product.id}</div>
-                <div className="productName">{product.name}</div>
+                <div className="productName">{product.product_name}</div>
                 <div className="productPrice">{product.price}₽ </div>
                 <div className="productCategory">{product.category}</div>
                 <div className="productDescription">{product.description}</div>

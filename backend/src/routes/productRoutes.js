@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const productController = require('../controllers/productControllers');
+const productController = require('../controllers/productController');
 const authMiddleware = require('../middleware/authMiddleware');
 
 
@@ -89,6 +89,7 @@ router.get('/', productController.getProducts);
 */
 router.get('/:id', productController.getProduct);
 
+router.get('/category/:type', productController.getProductsByCat);
 /**
 * @swagger
 * /api/products:

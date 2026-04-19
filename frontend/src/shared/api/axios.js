@@ -8,6 +8,61 @@ const apiClient = axios.create({
     }
 });
 
+apiClient.interceptors.request.use((config) => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+}, (error) => Promise.reject(error));
+
+apiClient.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        const originalRequest = error.config;
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            
+            const accessToken = localStorage.getItem('accessToken');
+            const refreshToken = localStorage.getItem('refreshToken');
+
+            if (!accessToken || !refreshToken) {
+                logoutAndRedirect();
+                return Promise.reject(error);
+            }
+
+            originalRequest._retry = true;
+
+            try {
+                const response = await axios.post('http://localhost:3000/api/auth/refresh', {
+                    refreshToken: refreshToken
+                });
+
+                const { accessToken: newAccess, refreshToken: newRefresh } = response.data;
+
+                localStorage.setItem('accessToken', newAccess);
+                localStorage.setItem('refreshToken', newRefresh);
+
+                originalRequest.headers.Authorization = `Bearer ${newAccess}`;
+                return api(originalRequest);
+
+            } catch (refreshError) {
+                logoutAndRedirect();
+                return Promise.reject(refreshError);
+            }
+        }
+
+        return Promise.reject(error);
+    }
+);
+
+function logoutAndRedirect() {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    window.location.href = '/login'; 
+}
+
+
+
 export const api = {
 
     createProduct: async (product) => {
@@ -20,18 +75,18 @@ export const api = {
         return response.data; 
     },
 
-    getProductById: async (id) => {
-        let response = await apiClient.get(`/products/${id}`);
+    getProductById: async (product_id) => {
+        let response = await apiClient.get(`/products/${product_id}`);
         return response.data;
         },
 
-    updateProduct: async (id, product) => {
-        let response = await apiClient.patch(`/products/${id}`, product);
+    updateProduct: async (product_id, product) => {
+        let response = await apiClient.patch(`/products/${product_id}`, product);
         return response.data;
     },
 
-    deleteProduct: async (id) => {
-        let response = await apiClient.delete(`/products/${id}`);
+    deleteProduct: async (product_id) => {
+        let response = await apiClient.delete(`/products/${product_id}`);
         return response.data;
     },
 
@@ -45,9 +100,9 @@ export const api = {
         return response.data; 
     },
 
-    getUserById: async (id) => {
-        let response = await apiClient.get(`/users/${id}`);
-        return response.datal;
+    getUserById: async (user_id) => {
+        let response = await apiClient.get(`/users/${user_id}`);
+        return response.data;
     },
 
     getUserByEmail: async (email) => {
@@ -55,33 +110,33 @@ export const api = {
         return response.data;
     },
 
-    updateUserById: async (id, user) => {
-        let response = await apiClient.patch(`/users/${id}`, user);
+    updateUserById: async (user_id, user) => {
+        let response = await apiClient.patch(`/users/${user_id}`, user);
         return response.data; 
     },
 
-    deleteUserById: async (email) => {
-        let response = await apiClient.delete(`/users/${id}`);
+    deleteUserById: async (user_id) => {
+        let response = await apiClient.delete(`/users/${user_id}`);
         return response.data;
     },
 
-    register: async (email, first_name, last_name, password) => {
-        let response = await apiClient.post('/auth/register', {email, first_name, last_name, password});
+    register: async (email, username, password) => {
+        let response = await apiClient.post('/auth/register', {email, username, password});
         return response.data;
     },
     
     login: async (email, password) => {
-        let response = await apiClient.post('auth/login', {email, password});
+        let response = await apiClient.post('/auth/login', {email, password});
         return response.data; 
     },
 
-    authMe: async (email) => {
-        let response = await apiClient.get('auth/me', email);
+    authMe: async () => {
+        let response = await apiClient.get('/auth/me');
         return response.data;
     },
 
     updateRefresh: async (refreshToken) => {
-        let response = await apiClient.post('auth/refresh', refreshToken);
+        let response = await apiClient.post('/auth/refresh', { refreshToken });
         return response.data; 
     }
 

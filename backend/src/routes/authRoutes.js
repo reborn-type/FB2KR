@@ -2,7 +2,7 @@ const authController = require('../controllers/authController');
 const express = require("express")
 const router = express.Router();
 
-router.post('/register', authController.register);
+router.post('/register', authController.registerUser);
 
 /**
 * @swagger
@@ -53,7 +53,7 @@ router.post('/register', authController.register);
 *       404:
 *         description: Пользователь не найден
 */
-router.post('/login', authController.login);
+router.post('/login', authController.loginUser);
 
 router.get('/me', authController.authMeController)
 
