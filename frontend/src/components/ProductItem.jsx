@@ -4,6 +4,7 @@ export default function ProductItem({product, onEdit, onDelete}){
     return (
         <div className="productRow">
             <div className="productMain">
+                <div className="productImage">{product.image}</div>
                 <div className="productId">#{product.id}</div>
                 <div className="productName">{product.name}</div>
                 <div className="productPrice">{product.price}₽ </div>
@@ -13,7 +14,7 @@ export default function ProductItem({product, onEdit, onDelete}){
                     <div className="productCountInStock">Осталось {product.countInStock} шт.</div>
                 ) : null}
             </div>
-            
+
             <div className="productActions">
                 <button className="btn" onClick={() => onEdit(product)}>
                     Редактировать

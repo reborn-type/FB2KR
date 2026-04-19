@@ -1,8 +1,8 @@
 const {getAllUsers, 
     getUserById, 
     createUser, 
-    updateUser, 
-    deleteUser, 
+    patchUserById, 
+    deleteUserById, 
     getUserByEmail} = require('../data/usersData');
 
 
@@ -61,11 +61,11 @@ async function postUser(req, res) {
     }
 }
 
-async function patchUser(req, res) {
+async function patchUserWithId(req, res) {
     try {
         const id = req.params.id;
         const {name, email, passwordHash} = req.body;
-        const user = await updateUser(id, name, email, passwordHash);
+        const user = await patchUserById(id, name, email, passwordHash);
         if(!user){
             return res.status(404).json({"error message": "Пользователь с таким ID не найден."});
         }
@@ -76,10 +76,10 @@ async function patchUser(req, res) {
     }
 }
 
-async function deleteUserOnId(req, res) {
+async function deleteUserWithId(req, res) {
     try {
         const id = req.params.id;
-        const user = await deleteUser(id);
+        const user = await deleteUserById(id);
         if(!user){
             return res.status(404).json({"error message": "Пользователь с таким ID не найден."});
         }
@@ -94,7 +94,7 @@ module.exports = {
     getUsers,
     getUser,
     postUser,
-    patchUser,
-    deleteUserOnId,
+    patchUserWithId,
+    deleteUserWithId,
     getUserWithEmail,
 };

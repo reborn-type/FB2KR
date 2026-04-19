@@ -66,7 +66,7 @@ const refreshTokens = async (refreshToken) => {
         const newAccessToken = generateAccessToken(user);
         const newRefreshToken = generateRefreshToken(user);
 
-        await authData.saveRefreshToken(newRefreshToken, email);
+        await authData.saveRefreshToken(email, newRefreshToken);
         res.json({
             accessToken: newAccessToken,
             refreshToken: newRefreshToken,
@@ -81,6 +81,7 @@ const refreshTokens = async (refreshToken) => {
 module.exports = {
     register,
     login,
-    authMe
+    authMe, 
+    refreshTokens
 };
 

@@ -3,7 +3,7 @@ const { redisClient } = require('../config/redis');
 const REFRESH_TOKEN_TTL = 7 * 24 * 60 * 60; 
 
 const saveRefreshToken = async (email, refreshToken) => {
-    const key = `rf_token:${token}`;
+    const key = `rf_token:${refreshToken}`;
 
     await redisClient.set(key, email, {
         EX: REFRESH_TOKEN_TTL

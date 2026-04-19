@@ -55,4 +55,8 @@ router.post('/register', authController.register);
 */
 router.post('/login', authController.login);
 
+router.get('/me', authController.authMeController)
+
+router.post('/refresh', authController.updateRefreshToken)
+
 module.exports = router;
