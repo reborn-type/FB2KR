@@ -1,7 +1,7 @@
 const authController = require('../controllers/authController');
 const express = require("express")
 const router = express.Router();
-
+const authMiddleware = require('../middleware/authMiddleware');
 router.post('/register', authController.registerUser);
 
 /**
@@ -55,7 +55,7 @@ router.post('/register', authController.registerUser);
 */
 router.post('/login', authController.loginUser);
 
-router.get('/me', authController.authMeController)
+router.get('/me', authMiddleware, authController.authMeController)
 
 router.post('/refresh', authController.updateRefreshToken)
 

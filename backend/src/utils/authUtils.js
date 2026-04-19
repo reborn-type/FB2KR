@@ -15,6 +15,7 @@ return jwt.sign(
     {
         sub: user.id,
         username: user.username,
+        role: user.role,
     },
 ACCESS_SECRET,
     {
@@ -27,6 +28,7 @@ return jwt.sign(
 {
     sub: user.id,
     username: user.username,
+    role: user.role,
 },
 REFRESH_SECRET,
 {

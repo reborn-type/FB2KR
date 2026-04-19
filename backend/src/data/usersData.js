@@ -33,11 +33,11 @@ async function getUserByEmail(email) {
 
 async function createUser(user_id,name, email, passwordHash) {
      const qry = `
-        INSERT INTO users (user_id, username, email, password_hash)
-        VALUES ($1, $2, $3, $4)
+        INSERT INTO users (user_id, username, email, password_hash, role)
+        VALUES ($1, $2, $3, $4, $5)
         RETURNING *;
     `;
-    const values = [user_id, name, email, passwordHash];
+    const values = [user_id, name, email, passwordHash, 'Пользователь'];
     try {
         const res = await db.query(qry, values);
         return res.rows[0];

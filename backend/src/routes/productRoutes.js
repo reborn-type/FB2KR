@@ -3,7 +3,10 @@ const router = express.Router();
 
 const productController = require('../controllers/productController');
 const authMiddleware = require('../middleware/authMiddleware');
-
+const { checkRole } = require('../middleware/roleMiddleware');
+const allAuth = [authMiddleware, checkRole(['Пользователь', 'Продавец', 'Администратор'])];
+const staffOnly = [authMiddleware, checkRole(['Продавец', 'Администратор'])];
+const adminOnly = [authMiddleware, checkRole(['Администратор'])];
 
 /**
 * @swagger
@@ -62,7 +65,7 @@ const authMiddleware = require('../middleware/authMiddleware');
 *                           items:
 *                               $ref: '#/components/schemas/Product'
 */
-router.get('/', productController.getProducts);
+router.get('/', allAuth, productController.getProducts);
 
 /**
 * @swagger
@@ -87,9 +90,9 @@ router.get('/', productController.getProducts);
 *           404:
 *               description: Товар не найден
 */
-router.get('/:id', productController.getProduct);
+router.get('/:id', allAuth, productController.getProduct);
 
-router.get('/category/:type', productController.getProductsByCat);
+router.get('/category/:type', allAuth, productController.getProductsByCat);
 /**
 * @swagger
 * /api/products:
@@ -129,7 +132,7 @@ router.get('/category/:type', productController.getProductsByCat);
 *       400:
 *         description: Ошибка в теле запроса
 */
-router.post('/', authMiddleware, productController.postProduct);
+router.post('/', staffOnly, productController.postProduct);
 
 /**
 * @swagger
@@ -173,7 +176,7 @@ router.post('/', authMiddleware, productController.postProduct);
 *           404:
 *               description: Товар не найден
 */
-router.patch('/:id', authMiddleware, productController.patchProduct);
+router.patch('/:id', staffOnly, productController.patchProduct);
 
 /**
 * @swagger
@@ -194,6 +197,6 @@ router.patch('/:id', authMiddleware, productController.patchProduct);
 *           404:
 *               description: Товар не найден
 */
-router.delete('/:id', authMiddleware, productController.deleteProduct);
+router.delete('/:id', adminOnly, productController.deleteProduct);
 
 module.exports = router;

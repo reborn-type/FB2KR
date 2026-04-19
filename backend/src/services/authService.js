@@ -28,7 +28,7 @@ const login = async (email, password) => {
     const refreshToken = authUtils.generateRefreshToken(user);
     await authData.saveRefreshToken(user.email, refreshToken);
 
-    return { accessToken, refreshToken };
+    return { accessToken, refreshToken, user: { email: user.email, role: user.role }};
 };
 
 const authMe = async (email) => {
@@ -38,7 +38,7 @@ const authMe = async (email) => {
         throw new Error('User not found');
     }
 
-    return {first_name: user.first_name, last_name: user.last_name, email: user.email};
+    return {username: user.username, email: user.email, role: user.role};
 }
 
 const refreshTokens = async (refreshToken) => {
