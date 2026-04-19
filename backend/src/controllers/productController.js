@@ -51,11 +51,22 @@ async function getProductsByCat(req, res) {
 
 async function postProduct(req, res) {
        try {
-              const {name, price, category, description, count_in_stock, image_url} = req.body;
+              const {name, price, category, description, countInStock, image_url} = req.body;
+
+              if(req.body?.name === undefined && req.body?.price === undefined && req.body?.category === undefined && req.body?.description === undefined &&  req.body?.countInStock === undefined){
+                     return res.status(400).json({
+                     error: "Nothing to update",
+                     });
+              }
+              if(name !== undefined) product.name = name;
+              if(price !== undefined) product.price = price;
+              if(category !== undefined) product.category = category;
+              if(description !== undefined) product.description = description;
+              if(countInStock !== undefined) product.countInStock = countInStock;
               const product = await createProduct(nanoid(5), 
               name.trim(), price, 
               category.trim(), description.trim(), 
-              count_in_stock, image_url);
+              countInStock, image_url);
               if(!product){
                      return res.status(400).json({"error message": "Товар не был создан."});
               }

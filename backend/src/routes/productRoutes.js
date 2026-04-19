@@ -62,7 +62,7 @@ const authMiddleware = require('../middleware/authMiddleware');
 *                           items:
 *                               $ref: '#/components/schemas/Product'
 */
-router.get('/products', productController.getProducts);
+router.get('/', productController.getProducts);
 
 /**
 * @swagger
@@ -87,7 +87,7 @@ router.get('/products', productController.getProducts);
 *           404:
 *               description: Товар не найден
 */
-router.get('/products/:id', productController.getProduct);
+router.get('/:id', productController.getProduct);
 
 /**
 * @swagger
@@ -128,7 +128,7 @@ router.get('/products/:id', productController.getProduct);
 *       400:
 *         description: Ошибка в теле запроса
 */
-router.post('/products', productController.postProduct);
+router.post('/', authMiddleware, productController.postProduct);
 
 /**
 * @swagger
@@ -172,7 +172,7 @@ router.post('/products', productController.postProduct);
 *           404:
 *               description: Товар не найден
 */
-router.patch('/products/:id', productController.patchProduct);
+router.patch('/:id', authMiddleware, productController.patchProduct);
 
 /**
 * @swagger
@@ -193,6 +193,6 @@ router.patch('/products/:id', productController.patchProduct);
 *           404:
 *               description: Товар не найден
 */
-router.delete('/products/:id', productController.deleteProduct);
+router.delete('/:id', authMiddleware, productController.deleteProduct);
 
 module.exports = router;

@@ -4,14 +4,10 @@ import "./ProductsPage.css";
 
 import ProductsList from "../../components/ProductsList.jsx";
 import ProductModal from "../../components/ProductModal.jsx";
-import {api} from "../../api/index"
+import {api} from "../../api/axios"
 
 export default function ProductsPage() {
     const [products, setProducts] = useState([]);
-
-    //  {id: 1, name: "Джерси-футболка casher", price: "3500", category: "Верхняя одежда", description: "Черно-белая", countInStock: 3},
-    //   {id: 2, name: "Джерси casher", price: "6500", category: "Верхняя одежда", description: "Черная", countInStock: 1},
-     //   {id: 3, name: "Шорты casher", price: "4500", category: "Шорты", description: "Бело-зеленые", countInStock: 12},
 
     const [modalOpen, setModalOpen] = useState(false);
     const [loading, setLoading] = useState(true);

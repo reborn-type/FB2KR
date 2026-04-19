@@ -1,3 +1,5 @@
+const bcrypt = require('bcrypt')
+const jwt = require("jsonwebtoken")
 
 // по хорошему запихнуть в env
 const ACCESS_SECRET = "jwt_is_good"
@@ -42,3 +44,10 @@ async function hashPassword(password) {
 async function verifyPassword(password, passwordHash){
     return bcrypt.compare(password, passwordHash);
 }
+
+module.exports = {
+    generateAccessToken,
+    generateRefreshToken,
+    hashPassword,
+    verifyPassword
+};

@@ -1,5 +1,5 @@
 const db = require('../config/db');
-
+const {nanoid} = require("nanoid")
 async function getAllProducts() {
     const res = await db.query('SELECT * FROM products;');
     return res.rows;
@@ -20,11 +20,11 @@ async function getProductById(productId) {
 
 async function createProduct(name, price, category, description, countInStock, imagePath) {
      const qry = `
-        INSERT INTO products (name, price, category, description, count_in_stock, image_url)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        INSERT INTO products (product_id, name, price, category, description, count_in_stock, image_url)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING *;
     `;
-    const values = [name, price, category, description, countInStock, imagePath];
+    const values = [nanoid(5), name, price, category, description, countInStock, imagePath];
     try {
         const res = await db.query(qry, values);
         return res.rows[0];
@@ -38,7 +38,7 @@ async function patchProductById(id, name, price, category, description, countInS
     const qry = `
         UPDATE products
         SET name = $1, price = $2, category = $3, description = $4, count_in_stock = $5, image_url = $6
-        WHERE id = $7
+        WHERE product_id = $7
         RETURNING *;
     `;
     const values = [name, price, category, description, countInStock, imagePath, id];

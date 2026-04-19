@@ -2,7 +2,8 @@ const {getAllUsers,
     getUserById, 
     createUser, 
     updateUser, 
-    deleteUser} = require('../data/usersData');
+    deleteUser, 
+    getUserByEmail} = require('../data/usersData');
 
 
 async function getUsers(req, res) {
@@ -31,6 +32,20 @@ async function getUser(req, res) {
         res.status(400).send("Ошибка сервера.");
     }
 }
+
+async function getUserWithEmail(req, res) {
+    try{
+        const email = req.params.email;
+        const user = await getUserByEmail(email);
+        
+        if(!user){
+            return res.status(404).json({"error message": "Пользователь с таким email не найден."});
+        }
+    }
+    catch (e){
+        res.status(400).send("Ошибка сервера.");
+    }
+};
 
 async function postUser(req, res) {
     try {
@@ -61,7 +76,7 @@ async function patchUser(req, res) {
     }
 }
 
-async function deleteUser(req, res) {
+async function deleteUserOnId(req, res) {
     try {
         const id = req.params.id;
         const user = await deleteUser(id);
@@ -80,5 +95,6 @@ module.exports = {
     getUser,
     postUser,
     patchUser,
-    deleteUser
+    deleteUserOnId,
+    getUserWithEmail,
 };
