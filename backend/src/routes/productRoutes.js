@@ -176,17 +176,17 @@ router.post('/', staffOnly, productController.postProduct);
 *           404:
 *               description: Товар не найден
 */
-router.patch('/:id', staffOnly, productController.patchProduct);
+router.patch('/:product_id', staffOnly, productController.patchProduct);
 
 /**
 * @swagger
-* /api/products/{id}:
+* /api/products/{product_id}:
 *   delete:
 *       summary: Удаляет товар
 *       tags: [Products]
 *       parameters:
 *         - in: path
-*           name: id
+*           name: product_id
 *           schema:
 *               type: string
 *           required: true
@@ -197,6 +197,6 @@ router.patch('/:id', staffOnly, productController.patchProduct);
 *           404:
 *               description: Товар не найден
 */
-router.delete('/:id', adminOnly, productController.deleteProduct);
+router.delete('/:product_id', adminOnly, productController.deleteProduct);
 
 module.exports = router;

@@ -84,8 +84,8 @@ async function patchProduct(req, res) {
 
 async function deleteProduct(req, res) {
        try {
-              const id = req.params.id;
-              const product = await deleteProductById(id);
+              const {product_id} = req.params;
+              const product = await deleteProductById(product_id);
               if(!product){
                      return res.status(404).json({"error message": "Товар с таким ID не найден."});
               }
