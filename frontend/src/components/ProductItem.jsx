@@ -5,7 +5,7 @@ export default function ProductItem({product, onEdit, onDelete}){
         <div className="productRow">
             <div className="productMain">
                 <div className="productImage">{product.image}</div>
-                <div className="productId">#{product.id}</div>
+                <div className="productId">#{product.product_id}</div>
                 <div className="productName">{product.product_name}</div>
                 <div className="productPrice">{product.price}₽ </div>
                 <div className="productCategory">{product.category}</div>
@@ -19,7 +19,7 @@ export default function ProductItem({product, onEdit, onDelete}){
                 <button className="btn" onClick={() => onEdit(product)}>
                     Редактировать
                 </button>
-                <button className="btn btn--danger" onClick={() => onDelete(product.id)}>
+                <button className="btn btn--danger" onClick={() => onDelete(product.product_id)}>
                     Удалить
                 </button>
             </div>

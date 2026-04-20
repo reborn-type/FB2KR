@@ -49,8 +49,8 @@ export default function ProductsPage() {
         setEditingProduct(null);
     };
 
-    const handleDelete = async (id) => {
-        if (!id) {
+    const handleDelete = async (product_id) => {
+        if (!product_id) {
             alert("Ошибка: ID товара не определен");
             return;
         }
@@ -58,8 +58,8 @@ export default function ProductsPage() {
         if (!ok) return;
         
         try {
-            await api.deleteProduct(id);
-            setProducts(prev => prev.filter(p => p.id !== id));
+            await api.deleteProduct(product_id);
+            setProducts(prev => prev.filter(p => p.product_id !== product_id));
         } catch (err) {
             console.error(err);
             alert("Ошибка удаления");
